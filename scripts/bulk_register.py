@@ -25,15 +25,16 @@ def read_csv_content(csv_file, has_header=True):
     
     return '\\n'.join(lines)
 
-def get_contract_address():
-    """Get the default account address from Aptos CLI config"""
+def get_contract_address(profile='default'):
+    """Get the account address from Aptos CLI config for specified profile"""
     try:
-        result = subprocess.run(['aptos', 'config', 'show-profiles'], 
+        result = subprocess.run(['aptos', 'config', 'show-profiles', '--profile', profile], 
                               capture_output=True, text=True, check=True)
         
         for line in result.stdout.split('\n'):
             if 'account' in line:
-                return line.split()[-1]
+                return line.split()[-1].strip('",\'')
+
         
         raise Exception("Could not find account address in config")
     except subprocess.CalledProcessError as e:
@@ -45,6 +46,7 @@ def main():
     parser.add_argument('csv_file', help='Path to CSV file (address format, one per line)')
     parser.add_argument('--header', action='store_true', help='CSV file has header row (default: no header)')
     parser.add_argument('--batch-size', type=int, default=100, help='Batch size for registration (default: 100)')
+    parser.add_argument('--profile', default='default', help='Aptos CLI profile to use (default: default)')
     
     args = parser.parse_args()
     
@@ -57,9 +59,10 @@ def main():
         has_header = args.header
         csv_content = read_csv_content(args.csv_file, has_header)
         
-        contract_addr = get_contract_address()
+        contract_addr = get_contract_address(args.profile)
         
         print(f"Registering participants from {args.csv_file} to lottery {args.lottery_id}...")
+        print(f"Profile: {args.profile}")
         print(f"Contract address: {contract_addr}")
         print(f"Has header: {has_header}")
         print(f"Batch size: {args.batch_size}")
@@ -72,6 +75,7 @@ def main():
             f'string:{csv_content}',
             f'bool:{str(has_header).lower()}',
             f'u64:{args.batch_size}',
+            '--profile', args.profile,
             '--assume-yes'
         ]
         
