@@ -57,13 +57,10 @@ module airdrop_lottery_addr::csv_bulk_registration {
         while (i < lines_count) {
             let line = vector::borrow(&lines, i);
             if (!string::is_empty(line)) {
-                let columns = split_by_comma(line);
-                if (vector::length(&columns) >= 2) {
-                    let address_str = trim_whitespace(vector::borrow(&columns, 1));
-                    if (!string::is_empty(&address_str)) {
-                        let addr = parse_address(&address_str);
-                        vector::push_back(&mut addresses, addr);
-                    };
+                let address_str = trim_whitespace(line);
+                if (!string::is_empty(&address_str)) {
+                    let addr = parse_address(&address_str);
+                    vector::push_back(&mut addresses, addr);
                 };
             };
             i = i + 1;
@@ -216,14 +213,14 @@ module airdrop_lottery_addr::csv_bulk_registration {
 
     #[test]
     public fun test_csv_parsing_with_header() {
-        let csv_data = string::utf8(b"email,address\nuser1@example.com,0x1234567890abcdef1234567890abcdef12345678\nuser2@example.com,0xabcdef1234567890abcdef1234567890abcdef12");
+        let csv_data = string::utf8(b"address\n0x1234567890abcdef1234567890abcdef12345678\n0xabcdef1234567890abcdef1234567890abcdef12");
         let addresses = parse_csv_addresses(&csv_data, true);
         assert!(vector::length(&addresses) == 2, 0);
     }
 
     #[test]
     public fun test_csv_parsing_without_header() {
-        let csv_data = string::utf8(b"user1@example.com,0x1234567890abcdef1234567890abcdef12345678\nuser2@example.com,0xabcdef1234567890abcdef1234567890abcdef12");
+        let csv_data = string::utf8(b"0x1234567890abcdef1234567890abcdef12345678\n0xabcdef1234567890abcdef1234567890abcdef12");
         let addresses = parse_csv_addresses(&csv_data, false);
         assert!(vector::length(&addresses) == 2, 0);
     }
@@ -289,5 +286,12 @@ module airdrop_lottery_addr::csv_bulk_registration {
         
         assert!(*vector::borrow(&columns, 0) == email, 1);
         assert!(*vector::borrow(&columns, 1) == address, 2);
+    }
+
+    #[test]
+    public fun test_address_only_parsing() {
+        let csv_data = string::utf8(b"0x1234567890abcdef1234567890abcdef12345678\n0xabcdef1234567890abcdef1234567890abcdef12\n0x9876543210fedcba9876543210fedcba98765432");
+        let addresses = parse_csv_addresses(&csv_data, false);
+        assert!(vector::length(&addresses) == 3, 0);
     }
 }

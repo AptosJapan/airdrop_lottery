@@ -6,15 +6,15 @@ set -e
 if [ $# -lt 2 ]; then
     echo "Usage: $0 <lottery_id> <csv_file> [has_header] [batch_size]"
     echo "  lottery_id: ID of the lottery to register participants for"
-    echo "  csv_file: Path to CSV file containing email,address data"
-    echo "  has_header: true/false (default: true)"
+    echo "  csv_file: Path to CSV file containing addresses (one per line)"
+    echo "  has_header: true/false (default: false)"
     echo "  batch_size: Number of addresses per batch (default: 100)"
     exit 1
 fi
 
 LOTTERY_ID=$1
 CSV_FILE=$2
-HAS_HEADER=${3:-true}
+HAS_HEADER=${3:-false}
 BATCH_SIZE=${4:-100}
 
 if [ ! -f "$CSV_FILE" ]; then

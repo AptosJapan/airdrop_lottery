@@ -16,10 +16,12 @@ def read_csv_content(csv_file, has_header=True):
     lines = []
     
     with open(csv_file, 'r', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            if len(row) >= 2:  # Ensure we have at least email,address columns
-                lines.append(','.join(row))
+        for line_num, line in enumerate(f):
+            line = line.strip()
+            if line:  # Skip empty lines
+                if has_header and line_num == 0:
+                    continue  # Skip header line
+                lines.append(line)
     
     return '\\n'.join(lines)
 
@@ -40,8 +42,8 @@ def get_contract_address():
 def main():
     parser = argparse.ArgumentParser(description='Bulk register lottery participants from CSV')
     parser.add_argument('lottery_id', type=int, help='Lottery ID to register participants for')
-    parser.add_argument('csv_file', help='Path to CSV file (email,address format)')
-    parser.add_argument('--no-header', action='store_true', help='CSV file has no header row')
+    parser.add_argument('csv_file', help='Path to CSV file (address format, one per line)')
+    parser.add_argument('--header', action='store_true', help='CSV file has header row (default: no header)')
     parser.add_argument('--batch-size', type=int, default=100, help='Batch size for registration (default: 100)')
     
     args = parser.parse_args()
@@ -52,7 +54,7 @@ def main():
         sys.exit(1)
     
     try:
-        has_header = not args.no_header
+        has_header = args.header
         csv_content = read_csv_content(args.csv_file, has_header)
         
         contract_addr = get_contract_address()
