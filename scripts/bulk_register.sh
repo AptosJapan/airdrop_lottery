@@ -69,14 +69,18 @@ for ((i=0; i<${#ADDRESSES[@]}; i+=BATCH_SIZE)); do
         batch_addresses+=("${ADDRESSES[j]}")
     done
     
-    address_args=""
+    address_list="["
+    first=true
     for addr in "${batch_addresses[@]}"; do
-        if [ -n "$address_args" ]; then
-            address_args="${address_args},address:${addr}"
+        if [ "$first" = true ]; then
+            address_list="${address_list}\"${addr}\""
+            first=false
         else
-            address_args="address:${addr}"
+            address_list="${address_list}, \"${addr}\""
         fi
     done
+    address_list="${address_list}]"
+    address_args="address:${address_list}"
     
     echo "Processing batch $batch_count with ${#batch_addresses[@]} addresses..."
     

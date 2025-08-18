@@ -46,7 +46,8 @@ def get_contract_address(profile='default'):
 
 def send_batch(contract_addr, lottery_id, addresses, profile, batch_num):
     """Send a batch of addresses to add_participant function"""
-    address_args = ','.join([f'address:{addr}' for addr in addresses])
+    address_list = '["' + '", "'.join(addresses) + '"]'
+    address_args = f'address:{address_list}'
     
     print(f"Processing batch {batch_num} with {len(addresses)} addresses...")
     
