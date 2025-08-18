@@ -24,7 +24,7 @@ fi
 
 CSV_CONTENT=$(cat "$CSV_FILE" | sed 's/"/\\"/g' | tr '\n' '\\n')
 
-CONTRACT_ADDR=$(aptos config show-profiles --profile default | grep account | awk '{print $2}')
+CONTRACT_ADDR=$(aptos config show-profiles --profile default | grep account | awk '{print $2}' | tr -d ',"')
 
 echo "Registering participants from $CSV_FILE to lottery $LOTTERY_ID..."
 echo "Contract address: $CONTRACT_ADDR"
