@@ -73,30 +73,27 @@ aptos move run \
 
 ### 5. CSV Bulk Registration
 
-Register multiple participants from a CSV file using the provided scripts:
+Register multiple participants from a CSV file using the provided wrapper scripts. The scripts parse CSV files locally and send multiple transactions with small batches of addresses to avoid transaction size limits.
 
 #### Using Bash Script (Recommended)
 ```bash
 # Make script executable
 chmod +x scripts/bulk_register.sh
 
-# Register participants from CSV file (no header by default)
+# Register participants from CSV file (no header by default, batch size 5)
 ./scripts/bulk_register.sh 1 participants.csv
 
-# With custom batch size
-./scripts/bulk_register.sh 1 participants.csv false 50
+# With custom batch size and profile
+./scripts/bulk_register.sh 1 participants.csv false 3 myprofile
 ```
 
 #### Using Python Script
 ```bash
-# Register participants (no header by default)
+# Register participants (no header by default, batch size 5)
 python3 scripts/bulk_register.py 1 participants.csv
 
-# Register with header row
-python3 scripts/bulk_register.py 1 participants.csv --header
-
-# Custom batch size
-python3 scripts/bulk_register.py 1 participants.csv --batch-size 50
+# Register with header row and custom batch size
+python3 scripts/bulk_register.py 1 participants.csv --header --batch-size 3 --profile myprofile
 ```
 
 #### CSV File Format
@@ -106,18 +103,25 @@ python3 scripts/bulk_register.py 1 participants.csv --batch-size 50
 0x9876543210fedcba9876543210fedcba98765432
 ```
 
-#### Direct Move Command (Advanced)
-```bash
-aptos move run \
-  --function-id <your_address>::csv_bulk_registration::register_participants_from_csv \
-  --args u64:1 string:"0x1234567890abcdef1234567890abcdef12345678\n0xabcdef1234567890abcdef1234567890abcdef12" bool:false u64:100
-```
+#### How It Works
+The wrapper scripts:
+1. Parse the CSV file locally and validate address formats
+2. Split addresses into batches (default: 5 addresses per batch)
+3. Send multiple transactions, each calling `add_participant` with a batch of addresses
+4. Use the existing `add_participant` function: `<your_address>::airdrop_lottery::add_participant`
 
-Parameters:
-- lottery_id: ID of the lottery
-- csv_file: Path to CSV file containing addresses (one per line)
-- has_header: true if CSV has header row, false otherwise (default: false)
-- batch_size: Number of addresses per batch (default: 100 for gas optimization)
+#### Parameters
+- **lottery_id**: ID of the lottery to register participants for
+- **csv_file**: Path to CSV file containing addresses (one per line)
+- **has_header**: true if CSV has header row, false otherwise (default: false)
+- **batch_size**: Number of addresses per transaction (default: 5 to avoid gas limits)
+- **profile**: Aptos CLI profile to use (default: default)
+
+#### Important Notes
+- Each batch creates a separate transaction to avoid `EXCEEDED_MAX_TRANSACTION_SIZE` errors
+- Smaller batch sizes (3-5) are recommended for reliability
+- Invalid addresses are automatically skipped with warnings
+- All transactions must succeed for the bulk registration to complete
 
 ### 6. Check Results
 
@@ -158,4 +162,4 @@ aptos move view \
 
 ## License
 
-This smart contract is provided under the MIT License.                        
+This smart contract is provided under the MIT License.                                
