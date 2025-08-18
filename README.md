@@ -71,7 +71,28 @@ aptos move run \
 ```
 - Lottery ID
 
-### 5. Check Results
+### 5. CSV Bulk Registration
+
+Register multiple participants from a CSV file:
+
+```bash
+# Example CSV content (with header):
+# address
+# 0x1234567890abcdef1234567890abcdef12345678
+# 0xabcdef1234567890abcdef1234567890abcdef12
+
+aptos move run \
+  --function-id <your_address>::csv_bulk_registration::register_participants_from_csv \
+  --args u64:1 string:"address\n0x1234567890abcdef1234567890abcdef12345678\n0xabcdef1234567890abcdef1234567890abcdef12" bool:true u64:100
+```
+
+Parameters:
+- lottery_id: ID of the lottery
+- csv_data: CSV string with participant addresses (use \n for line breaks)
+- has_header: true if CSV has header row, false otherwise
+- batch_size: Number of addresses per batch (0 = default 100 for gas optimization)
+
+### 6. Check Results
 
 ```bash
 # Check lottery details
@@ -110,4 +131,4 @@ aptos move view \
 
 ## License
 
-This smart contract is provided under the MIT License.    
+This smart contract is provided under the MIT License.        
