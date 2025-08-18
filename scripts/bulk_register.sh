@@ -3,12 +3,14 @@
 set -e
 
 if [ $# -lt 2 ]; then
-    echo "Usage: $0 <lottery_id> <csv_file> [has_header] [batch_size] [profile]"
+    echo "Usage: $0 <lottery_id> <csv_file> [has_header] [batch_size] [profile] [api_key] [node_url]"
     echo "  lottery_id: ID of the lottery to register participants for"
     echo "  csv_file: Path to CSV file containing addresses (one per line)"
     echo "  has_header: true/false (default: false)"
     echo "  batch_size: Number of addresses per batch (default: 5)"
     echo "  profile: Aptos CLI profile to use (default: default)"
+    echo "  api_key: API key for rate limiting (optional, can also set APTOS_API_KEY env var)"
+    echo "  node_url: Custom node URL to use (optional)"
     exit 1
 fi
 
@@ -17,6 +19,8 @@ CSV_FILE=$2
 HAS_HEADER=${3:-false}
 BATCH_SIZE=${4:-5}
 PROFILE=${5:-default}
+API_KEY=${6:-$APTOS_API_KEY}
+NODE_URL=$7
 
 if [ ! -f "$CSV_FILE" ]; then
     echo "Error: CSV file '$CSV_FILE' not found"
@@ -59,6 +63,12 @@ echo "Contract address: $CONTRACT_ADDR"
 echo "Has header: $HAS_HEADER"
 echo "Batch size: $BATCH_SIZE"
 echo "Total addresses: ${#ADDRESSES[@]}"
+if [ -n "$API_KEY" ]; then
+    echo "API key: configured"
+fi
+if [ -n "$NODE_URL" ]; then
+    echo "Node URL: $NODE_URL"
+fi
 
 batch_count=0
 for ((i=0; i<${#ADDRESSES[@]}; i+=BATCH_SIZE)); do
@@ -84,12 +94,17 @@ for ((i=0; i<${#ADDRESSES[@]}; i+=BATCH_SIZE)); do
     
     echo "Processing batch $batch_count with ${#batch_addresses[@]} addresses..."
     
-    aptos move run \
-      --function-id ${CONTRACT_ADDR}::airdrop_lottery::add_participant \
-      --args u64:${LOTTERY_ID} "${address_args}" \
-      --profile $PROFILE \
-      --assume-yes \
-      --verbose
+    cmd="aptos move run --function-id ${CONTRACT_ADDR}::airdrop_lottery::add_participant --args u64:${LOTTERY_ID} \"${address_args}\" --profile $PROFILE --assume-yes --verbose"
+    
+    if [ -n "$API_KEY" ]; then
+        cmd="$cmd --node-api-key \"$API_KEY\""
+    fi
+    
+    if [ -n "$NODE_URL" ]; then
+        cmd="$cmd --url \"$NODE_URL\""
+    fi
+    
+    eval $cmd
     
     if [ $? -eq 0 ]; then
         echo "Batch $batch_count completed successfully"

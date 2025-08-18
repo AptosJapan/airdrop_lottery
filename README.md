@@ -85,6 +85,12 @@ chmod +x scripts/bulk_register.sh
 
 # With custom batch size and profile
 ./scripts/bulk_register.sh 1 participants.csv false 3 myprofile
+
+# With API key to avoid rate limits (recommended for production)
+./scripts/bulk_register.sh 1 participants.csv false 5 myprofile "your-api-key-here"
+
+# With API key and custom node URL
+./scripts/bulk_register.sh 1 participants.csv false 5 myprofile "your-api-key-here" "https://your-custom-node.com"
 ```
 
 #### Using Python Script
@@ -94,6 +100,16 @@ python3 scripts/bulk_register.py 1 participants.csv
 
 # Register with header row and custom batch size
 python3 scripts/bulk_register.py 1 participants.csv --header --batch-size 3 --profile myprofile
+
+# With API key to avoid rate limits (recommended for production)
+python3 scripts/bulk_register.py 1 participants.csv --api-key "your-api-key-here"
+
+# With API key and custom node URL
+python3 scripts/bulk_register.py 1 participants.csv --api-key "your-api-key-here" --node-url "https://your-custom-node.com"
+
+# Using environment variable for API key
+export APTOS_API_KEY="your-api-key-here"
+python3 scripts/bulk_register.py 1 participants.csv
 ```
 
 #### CSV File Format
@@ -116,12 +132,26 @@ The wrapper scripts:
 - **has_header**: true if CSV has header row, false otherwise (default: false)
 - **batch_size**: Number of addresses per transaction (default: 5 to avoid gas limits)
 - **profile**: Aptos CLI profile to use (default: default)
+- **api_key**: API key for rate limiting (optional, can also set `APTOS_API_KEY` env var)
+- **node_url**: Custom RPC node URL (optional, overrides profile default)
 
 #### Important Notes
 - Each batch creates a separate transaction to avoid `EXCEEDED_MAX_TRANSACTION_SIZE` errors
 - Smaller batch sizes (3-5) are recommended for reliability
 - Invalid addresses are automatically skipped with warnings
 - All transactions must succeed for the bulk registration to complete
+- **API Key Recommended**: Use an API key to avoid rate limits when processing large CSV files
+- Get your API key from [Geomi](https://geomi.dev/docs/start) or other Aptos RPC providers
+
+#### API Key Setup
+To avoid rate limiting errors, obtain an API key from an Aptos RPC provider:
+
+1. **Get API Key**: Visit [Geomi](https://geomi.dev/docs/start) to create an account and get your API key
+2. **Set Environment Variable** (recommended):
+   ```bash
+   export APTOS_API_KEY="your-api-key-here"
+   ```
+3. **Or pass directly**: Use `--api-key` parameter in the scripts
 
 ### 6. Check Results
 
@@ -162,4 +192,4 @@ aptos move view \
 
 ## License
 
-This smart contract is provided under the MIT License.                                
+This smart contract is provided under the MIT License.                                        
