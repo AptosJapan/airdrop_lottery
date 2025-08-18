@@ -24,7 +24,7 @@ if [ ! -f "$CSV_FILE" ]; then
     exit 1
 fi
 
-CSV_CONTENT=$(cat "$CSV_FILE" | sed 's/"/\\"/g' | tr '\n' '\\n')
+CSV_CONTENT=$(cat "$CSV_FILE" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
 
 CONTRACT_ADDR=$(aptos config show-profiles --profile $PROFILE | grep account | awk '{print $2}' | tr -d ',"')
 

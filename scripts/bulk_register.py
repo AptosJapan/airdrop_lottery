@@ -23,7 +23,7 @@ def read_csv_content(csv_file, has_header=True):
                     continue  # Skip header line
                 lines.append(line)
     
-    return '\\n'.join(lines)
+    return '\n'.join(lines)
 
 def get_contract_address(profile='default'):
     """Get the account address from Aptos CLI config for specified profile"""
