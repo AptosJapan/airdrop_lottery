@@ -18,12 +18,12 @@ def read_csv_content(csv_file, has_header=True):
     with open(csv_file, 'r', encoding='utf-8') as f:
         for line_num, line in enumerate(f):
             line = line.strip()
-            if line:  # Skip empty lines
+            if line and not line.isspace():  # Skip empty lines and whitespace-only lines
                 if has_header and line_num == 0:
                     continue  # Skip header line
                 lines.append(line)
     
-    return '\n'.join(lines)
+    return '\\n'.join(lines)
 
 def get_contract_address(profile='default'):
     """Get the account address from Aptos CLI config for specified profile"""
