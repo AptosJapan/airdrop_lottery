@@ -73,24 +73,48 @@ aptos move run \
 
 ### 5. CSV Bulk Registration
 
-Register multiple participants from a CSV file:
+Register multiple participants from a CSV file using the provided scripts:
 
+#### Using Bash Script (Recommended)
 ```bash
-# Example CSV content (with header):
-# address
-# 0x1234567890abcdef1234567890abcdef12345678
-# 0xabcdef1234567890abcdef1234567890abcdef12
+# Make script executable
+chmod +x scripts/bulk_register.sh
 
+# Register participants from CSV file
+./scripts/bulk_register.sh 1 participants.csv true 100
+```
+
+#### Using Python Script
+```bash
+# Register with header (default)
+python3 scripts/bulk_register.py 1 participants.csv
+
+# Register without header
+python3 scripts/bulk_register.py 1 participants.csv --no-header
+
+# Custom batch size
+python3 scripts/bulk_register.py 1 participants.csv --batch-size 50
+```
+
+#### CSV File Format
+```csv
+email,address
+user1@example.com,0x1234567890abcdef1234567890abcdef12345678
+user2@example.com,0xabcdef1234567890abcdef1234567890abcdef12
+```
+
+#### Direct Move Command (Advanced)
+```bash
 aptos move run \
   --function-id <your_address>::csv_bulk_registration::register_participants_from_csv \
-  --args u64:1 string:"address\n0x1234567890abcdef1234567890abcdef12345678\n0xabcdef1234567890abcdef1234567890abcdef12" bool:true u64:100
+  --args u64:1 string:"email,address\nuser1@example.com,0x1234..." bool:true u64:100
 ```
 
 Parameters:
 - lottery_id: ID of the lottery
-- csv_data: CSV string with participant addresses (use \n for line breaks)
+- csv_file: Path to CSV file containing email,address data
 - has_header: true if CSV has header row, false otherwise
-- batch_size: Number of addresses per batch (0 = default 100 for gas optimization)
+- batch_size: Number of addresses per batch (default: 100 for gas optimization)
 
 ### 6. Check Results
 
@@ -131,4 +155,4 @@ aptos move view \
 
 ## License
 
-This smart contract is provided under the MIT License.        
+This smart contract is provided under the MIT License.                
