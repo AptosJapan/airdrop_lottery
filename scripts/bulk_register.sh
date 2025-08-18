@@ -84,7 +84,8 @@ for ((i=0; i<${#ADDRESSES[@]}; i+=BATCH_SIZE)); do
       --function-id ${CONTRACT_ADDR}::airdrop_lottery::add_participant \
       --args u64:${LOTTERY_ID} "${address_args}" \
       --profile $PROFILE \
-      --assume-yes
+      --assume-yes \
+      --verbose
     
     if [ $? -eq 0 ]; then
         echo "Batch $batch_count completed successfully"

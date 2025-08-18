@@ -67,7 +67,9 @@ def send_batch(contract_addr, lottery_id, addresses, profile, batch_num):
     except subprocess.CalledProcessError as e:
         print(f"Error: Batch {batch_num} failed: {e}")
         if e.stderr:
-            print(f"Error details: {e.stderr}")
+            print(f"STDERR: {e.stderr}")
+        if e.stdout:
+            print(f"STDOUT: {e.stdout}")
         return False
 
 def main():
