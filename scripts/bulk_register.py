@@ -5,6 +5,7 @@ Usage: python3 scripts/bulk_register.py <lottery_id> <csv_file> [--header] [--ba
 """
 
 import argparse
+import os
 import re
 import subprocess
 import sys
@@ -44,7 +45,7 @@ def get_contract_address(profile='default'):
     except subprocess.CalledProcessError as e:
         raise Exception(f"Failed to get Aptos config: {e}")
 
-def send_batch(contract_addr, lottery_id, addresses, profile, batch_num):
+def send_batch(contract_addr, lottery_id, addresses, profile, batch_num, api_key=None, node_url=None):
     """Send a batch of addresses to add_participant function"""
     address_list = '["' + '", "'.join(addresses) + '"]'
     address_args = f'address:{address_list}'
@@ -60,6 +61,12 @@ def send_batch(contract_addr, lottery_id, addresses, profile, batch_num):
         '--profile', profile,
         '--assume-yes'
     ]
+    
+    if api_key:
+        cmd.extend(['--node-api-key', api_key])
+    
+    if node_url:
+        cmd.extend(['--url', node_url])
     
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
@@ -80,6 +87,8 @@ def main():
     parser.add_argument('--header', action='store_true', help='CSV file has header row (default: no header)')
     parser.add_argument('--batch-size', type=int, default=5, help='Batch size for registration (default: 5)')
     parser.add_argument('--profile', default='default', help='Aptos CLI profile to use (default: default)')
+    parser.add_argument('--api-key', help='API key for rate limiting (can also set APTOS_API_KEY env var)')
+    parser.add_argument('--node-url', help='Custom node URL to use instead of profile default')
     
     args = parser.parse_args()
     
@@ -97,12 +106,18 @@ def main():
         
         contract_addr = '0x' + get_contract_address(args.profile)
         
+        api_key = args.api_key or os.environ.get('APTOS_API_KEY')
+        
         print(f"Registering participants from {args.csv_file} to lottery {args.lottery_id}...")
         print(f"Profile: {args.profile}")
         print(f"Contract address: {contract_addr}")
         print(f"Has header: {args.header}")
         print(f"Batch size: {args.batch_size}")
         print(f"Total addresses: {len(addresses)}")
+        if api_key:
+            print("API key: configured")
+        if args.node_url:
+            print(f"Node URL: {args.node_url}")
         
         batch_count = 0
         failed_batches = 0
@@ -111,7 +126,7 @@ def main():
             batch_count += 1
             batch_addresses = addresses[i:i + args.batch_size]
             
-            success = send_batch(contract_addr, args.lottery_id, batch_addresses, args.profile, batch_count)
+            success = send_batch(contract_addr, args.lottery_id, batch_addresses, args.profile, batch_count, api_key, args.node_url)
             if not success:
                 failed_batches += 1
         
