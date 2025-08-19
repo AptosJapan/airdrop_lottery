@@ -95,7 +95,7 @@ def main():
             print("Error: No valid addresses found in CSV file")
             sys.exit(1)
         
-        contract_addr = get_contract_address(args.profile)
+        contract_addr = '0x' + get_contract_address(args.profile)
         
         print(f"Registering participants from {args.csv_file} to lottery {args.lottery_id}...")
         print(f"Profile: {args.profile}")
